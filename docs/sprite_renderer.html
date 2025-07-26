@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://pixijs.download/v7.4.2/pixi.js"></script>
+    <style>
+      html, body { margin: 0; padding: 0; }
+    </style>
+  </head>
+  <body>
+  <script>
+    let app = new PIXI.Application({ width: 640, height: 360 });
+    document.body.appendChild(app.view);
+    
+    // Load the sprite sheet
+    PIXI.Assets.load('https://i.imgur.com/vpOXu2x.png').then((texture) => {
+      // Create sprite sheet with 4 columns and 5 rows
+      const frameWidth = texture.width / 4;
+      const frameHeight = texture.height / 5;
+      
+      // Create textures for each frame
+      const frames = [];
+      for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 4; col++) {
+          const frame = new PIXI.Texture(
+            texture,
+            new PIXI.Rectangle(
+              col * frameWidth,
+              row * frameHeight,
+              frameWidth,
+              frameHeight
+            )
+          );
+          frames.push(frame);
+        }
+      }
+      
+      // Create animated sprite
+      const animatedSprite = new PIXI.AnimatedSprite(frames);
+      animatedSprite.animationSpeed = 0.5;
+      animatedSprite.loop = false;
+      
+      // Center the sprite
+      animatedSprite.x = app.screen.width / 2;
+      animatedSprite.y = app.screen.height / 2;
+      animatedSprite.anchor.set(0.5);
+      
+      app.stage.addChild(animatedSprite);
+      
+      // Custom animation logic
+      let flickerCount = 0;
+      let isFlickering = true;
+      let flickerFrame = 0;
+      
+      app.ticker.add(() => {
+        if (isFlickering) {
+          // Flicker between frame 0 and 1
+          flickerFrame = (flickerFrame + 1) % 2;
+          animatedSprite.gotoAndStop(flickerFrame);
+          flickerCount++;
+          
+          // After 40 flickers, start full animation
+          if (flickerCount >= 100) {
+            isFlickering = false;
+            animatedSprite.gotoAndPlay(0);
+          }
+        } else {
+          // Check if full animation is complete
+          if (animatedSprite.currentFrame === frames.length - 1) {
+            // Reset for next cycle
+            isFlickering = true;
+            flickerCount = 0;
+            flickerFrame = 0;
+          }
+        }
+      });
+    });
+  </script>
+  </body>
+</html>
